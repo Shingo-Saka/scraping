@@ -1,0 +1,37 @@
+#メソッドをインポート
+import requests
+from bs4 import BeautifulSoup 
+from selenium import webdriver 
+from selenium.webdriver.chrome.options import Options
+import time
+
+#ヘッドレスで開く
+options=Options()
+options.add_argument("--headless")
+driver=webdriver.Chrome(options=options)
+
+#空のリスト作る
+co_list=[]
+co_info=[]
+
+#BeautifulSoupでデータ取る
+for page_number in range(1, 20):
+    driver.get("https://www.startuplist.jp/ventures?page={}".format(page_number))
+    time.sleep(2)
+    soup=BeautifulSoup(driver.page_source, "html.parser")
+    co_name=soup.find_all("div", class_="css-1qemygu etn91xr9")
+    
+    for elem in co_name:
+        co=elem.find_all("div", class_="css-1nn2xi0 etn91xr11")
+        for a in co:
+            co_list.append(a.text) 
+        info=elem.find_all("div", class_="css-1fc35cd etn91xr12")
+        for b in info:
+            co_info.append(b.text)
+
+#CSVの形に整える
+import pandas as pd
+co_info_dict=dict(zip(co_list, co_info))
+df_list=pd.DataFrame(co_info_dict.items())
+df_list=df_list.rename(columns={0:" 会社名", 1: "会社情報"})
+df_list.to_csv("スタートアップリスト.csv")
