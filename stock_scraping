@@ -1,0 +1,47 @@
+#モジュールのインポート
+from selenium import webdriver
+from bs4 import BeautifulSoup
+import requests
+import time
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
+#Classの作成
+class Stock():
+    url="https://minkabu.jp/"
+    
+    #初期化
+    def __init__(self, stock_number):
+        self.stock_number=stock_number
+        driver=webdriver.Chrome()
+        driver.get(self.url)
+        time.sleep(2)
+        search_box=driver.find_element_by_id("tag")
+        search_box.send_keys(self.stock_number)
+        search_button=driver.find_element_by_css_selector("#hs_form > div > div > input.gnavi_search.ly_col.ly_colsize_2_fix.mzp")
+        search_button.click()
+        time.sleep(2)
+        jikeiretsu=driver.find_element_by_css_selector("#js_stock_tab_fixed_start > ul > li:nth-child(5) > a > div")
+        jikeiretsu.click()
+        more=driver.find_element_by_css_selector("#contents > div:nth-child(4) > div:nth-child(2) > div > div > div > p > a")
+        time.sleep(2)
+        more.click()
+        time.sleep(2)
+        more.click()
+        time.sleep(2)
+
+        html=driver.page_source.encode("utf-8")
+        soup=BeautifulSoup(html, "html.parser")
+        table=soup.find_all("tr")
+        head=[h.text for h in table[0].find_all("th")]
+        datas=[]
+        for i in range(1, 50):
+            datas.append([d.text for d in table[i].find_all("td")])
+        df=pd.DataFrame(datas, columns=head)
+
+    def show_df(self):
+        return df
+
+NeuralPocket=Stock(4056)
+NeuralPocket.show_df()
