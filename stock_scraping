@@ -1,9 +1,8 @@
 #モジュールのインポート
-from selenium import webdriver
 from bs4 import BeautifulSoup
+from selenium import webdriver
 import requests
 import time
-import matplotlib.pyplot as plt
 import pandas as pd
 
 #空のリストを用意
