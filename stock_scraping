@@ -6,42 +6,78 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 
+#空のリストを用意
+com_name=[]
+f_per_list=[]
+f_val_list=[]
+found_list=[]
+cur_val_list=[]
+cur_per_list=[]
+cur_psr_list=[]
+f_year=[]
+content=[]
 
-#Classの作成
-class Stock():
-    url="https://minkabu.jp/"
+#検索したい銘柄コードを用意
+stock_number=pd.read_csv("all_stock_number.csv")["銘柄"].values.tolist()
+
+#ipoページの検索
+for i in stock_number:
+    url="https://minkabu.jp/stock/{}/ipo".format(i)
+    contents=requests.get(url).content
+    soup=BeautifulSoup(contents, "html.parser")
+    f_per=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(2) > dl:nth-child(2) > dd:nth-child(10)")
+    f_val=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(2) > dl:nth-child(2) > dd:nth-child(18)")
+    found=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(6) > table > tbody > tr:nth-child(1) > td")
+    biz_content=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(1) > dl > dd.ly_col.ly_colsize_10")
+    ipo_year=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(1) > dl > dd:nth-child(12)")
+
+    for j in f_per:
+        f_per_list.append(j.text)
+    for k in f_val:
+        k_pure=k.text.replace("百万円","")
+        f_val_list.append(k_pure)
+    for l in found:
+        l_pure=l.text[0:4]
+        found_list.append(l_pure)
+    for s in ipo_year:
+        s_pure=s.text[0:4]
+        f_year.append(s_pure)
+    for t in biz_content:
+        content.append(t.text)
+
+#概要ページの検索
+for m in stock_number:
+    url="https://minkabu.jp/stock/{}".format(m)
+    contents=requests.get(url).content
+    soup=BeautifulSoup(contents, "html.parser")
     
-    #初期化
-    def __init__(self, stock_number):
-        self.stock_number=stock_number
-        driver=webdriver.Chrome()
-        driver.get(self.url)
-        time.sleep(2)
-        search_box=driver.find_element_by_id("tag")
-        search_box.send_keys(self.stock_number)
-        search_button=driver.find_element_by_css_selector("#hs_form > div > div > input.gnavi_search.ly_col.ly_colsize_2_fix.mzp")
-        search_button.click()
-        time.sleep(2)
-        jikeiretsu=driver.find_element_by_css_selector("#js_stock_tab_fixed_start > ul > li:nth-child(5) > a > div")
-        jikeiretsu.click()
-        more=driver.find_element_by_css_selector("#contents > div:nth-child(4) > div:nth-child(2) > div > div > div > p > a")
-        time.sleep(2)
-        more.click()
-        time.sleep(2)
-        more.click()
-        time.sleep(2)
+    cur_val=soup.select("#sh_field_body > div > div:nth-child(1) > div > div > div.md_box > div > div.ly_row.ly_gutters > dl > div > div:nth-child(2) > ul > li:nth-child(2) > dd")
+    cur_per=soup.select("#sh_field_body > div > div:nth-child(1) > div > div > div.md_box > div > div.ly_row.ly_gutters > dl > div > div.ly_row.ly_gutters > div:nth-child(2) > ul > li:nth-child(2) > dd")
+    cur_psr=soup.select("#sh_field_body > div > div:nth-child(1) > div > div > div.md_box > div > div.ly_row.ly_gutters > dl > div > div.ly_row.ly_gutters > div:nth-child(2) > ul > li:nth-child(3) > dd")
+    name=soup.select("#layout > div:nth-child(4) > div.contents_wrapper.ly_container > div.md_stockBoard > div > div:nth-child(1) > div > div > div.ly_col.ly_colsize_7.md_box.ly_row.ly_gutters > div.ly_col.ly_colsize_7 > h1 > a > p")
+    
+    for n in cur_val:
+        n_pure=n.text.replace("百万円","")
+        cur_val_list.append(n_pure)
+    for o in cur_per:
+        o_pure=o.text.replace("倍","")
+        cur_per_list.append(o_pure)
+    for p in cur_psr:
+        p_pure=p.text.replace("倍","")
+        cur_psr_list.append(p_pure)
+    for q in name:
+        com_name.append(q.text)
 
-        html=driver.page_source.encode("utf-8")
-        soup=BeautifulSoup(html, "html.parser")
-        table=soup.find_all("tr")
-        head=[h.text for h in table[0].find_all("th")]
-        datas=[]
-        for i in range(1, 50):
-            datas.append([d.text for d in table[i].find_all("td")])
-        df=pd.DataFrame(datas, columns=head)
-
-    def show_df(self):
-        return df
-
-NeuralPocket=Stock(4056)
-NeuralPocket.show_df()
+#panda型に収納
+table=pd.DataFrame(
+    {'銘柄': stock_number,
+     "会社名": com_name,
+     "現在時価総額": cur_val_list,
+     "現在PER": cur_per_list,
+     "現在PSR": cur_psr_list,
+     "初値時価総額": f_val_list,
+     "初値PER": f_per_list,
+     "設立": found_list,
+     "上場年": f_year,
+     "事業内容": content
+    })
