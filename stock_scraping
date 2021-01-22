@@ -25,7 +25,7 @@ for i in stock_number:
     contents=requests.get(url).content
     soup=BeautifulSoup(contents, "html.parser")
     f_per=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(2) > dl:nth-child(2) > dd:nth-child(10)")
-    f_val=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(2) > dl:nth-child(2) > dd:nth-child(18)")
+    f_val=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(2) > dl:nth-child(2) > dd:nth-child(20)")
     found=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(6) > table > tbody > tr:nth-child(1) > td")
     biz_content=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(1) > dl > dd.ly_col.ly_colsize_10")
     ipo_year=soup.select("#contents > div:nth-child(4) > div.md_mtab_box.md_box > div:nth-child(1) > dl > dd:nth-child(12)")
